@@ -145,11 +145,13 @@ Copy [`.env.example`](./.env.example) and set at least:
 |---|---|
 | Public entry | `GATEWAY_PORT`, `APP_PUBLIC_URL`, `CORS_ORIGINS` |
 | Auth | `JWT_SECRET`, `BOOTSTRAP_ADMIN_*` |
-| Vault | `VAULT_MASTER_KEY`, `VAULT_SERVICE_TOKEN` |
+| Vault crypto | `VAULT_MASTER_KEY`, `VAULT_SERVICE_TOKEN` |
 | Internal tokens | `GATEWAY_INTERNAL_TOKEN`, `ORCHESTRATOR_API_TOKEN`, `KNOWLEDGE_SERVICE_TOKEN` |
 | Database | `POSTGRES_PASSWORD` |
 
-**Provider tokens** (Git, Jira, Figma, search APIs, …) go into **Secrets** in the UI after login — not into compose env on a real deploy.
+**Provider tokens** (Git, Jira, Figma, search APIs, …) go into **Secrets** in the UI after login — not into compose env on a real deploy. Names like `GIT_ADMIN_*` / `JIRA_ADMIN_*` are worker-UI logins, not forge PATs.
+
+Full matrix (`.env` vs vault): [docs/configuration.md](./docs/configuration.md).
 
 Your own domain:
 

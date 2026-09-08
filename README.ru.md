@@ -139,6 +139,8 @@ curl -sS -o /dev/null -w "%{http_code}\n" http://localhost:4300/
 
 ## Конфигурация
 
+Подробная матрица «что в `.env`, что в vault»: [docs/configuration.md](./docs/configuration.md).
+
 Скопируйте [`.env.example`](./.env.example) и задайте как минимум:
 
 | Область | Переменные |
