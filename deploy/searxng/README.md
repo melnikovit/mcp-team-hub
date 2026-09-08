@@ -1,22 +1,35 @@
-# SearXNG в стеке MCP
+# SearXNG in the mcp-team-hub stack
+#
+# Private meta-search for mcp-web-search — no paid SERP API required.
+#
+# Docker hostname (from other compose services):
+#   http://searxng:8080
+#
+# Do not publish this service on the public internet by default.
+# Prefer storing the connection in the in-app vault after install.
 
-Приватный метапоиск для **mcp-web-search** без платных API.
-
-## Сервис
-
-- **Docker hostname:** `searxng:8080` (для `X-Web-Search-Connections` в mcp.json)
-- **На хосте (отладка):** `127.0.0.1:8088`
-- **Публичный URL:** не выставляем по умолчанию (чтобы не использовать как открытый прокси)
-
-## mcp.json
+## mcp client / vault connection (example)
 
 ```json
-"X-Web-Search-Connections": "[{\"name\":\"searx\",\"provider\":\"searxng\",\"base_url\":\"http://searxng:8080\",\"default\":true}]"
+{
+  "name": "searx",
+  "provider": "searxng",
+  "base_url": "http://searxng:8080",
+  "default": true
+}
 ```
 
-## Прод
+## Before real deployment
 
-1. Смените `server.secret_key` в `settings.yml`: `openssl rand -hex 32`
-2. После деплоя: `curl -s 'http://127.0.0.1:8088/search?format=json&q=test' | head`
+1. Change `server.secret_key` in `settings.yml` (`openssl rand -hex 32`).
+2. Keep SearXNG on the Docker network only unless you intentionally expose it.
 
-Движки: Google, Yandex (ru), DuckDuckGo — fallback если Google режет IP.
+## Engines
+
+Google, Yandex (ru), DuckDuckGo — DuckDuckGo is a useful fallback if Google rate-limits the host IP.
+
+---
+
+### На русском
+
+Приватный метапоиск для **mcp-web-search**. Хост в Docker-сети: `searxng:8080`. Наружу по умолчанию не открывайте. Перед продом смените `server.secret_key` в `settings.yml`.

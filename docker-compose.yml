@@ -1,4 +1,8 @@
-# Public deploy compose for mcp-team-hub (Docker Hub images)
+# mcp-team-hub — public deploy template
+# Pulls images from Docker Hub: melnikovit/mcp-team-hub-*
+# Configure secrets via .env (see .env.example). Do not commit real credentials.
+# UI / API / MCP entry: http://localhost:${GATEWAY_PORT:-4300}
+
 services:
   postgres:
     image: pgvector/pgvector:pg16-bookworm
