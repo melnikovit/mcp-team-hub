@@ -1,84 +1,51 @@
-# Docker Hub images
+# Docker images
 
-All first-party images are **public** under [`melnikovit`](https://hub.docker.com/u/melnikovit).
+First-party images are public under [`melnikovit`](https://hub.docker.com/u/melnikovit).
 
-Tag pattern: `melnikovit/mcp-team-hub-<component>:latest` (CI may also push a git-SHA tag).
-
-Compose in this repo pins `:latest` for a simple install. Pin a SHA tag in production if you need reproducible deploys.
-
-## Platform
-
-- `melnikovit/mcp-team-hub-gateway`
-- `melnikovit/mcp-team-hub-frontend`
-- `melnikovit/mcp-team-hub-backend`
-- `melnikovit/mcp-team-hub-orchestrator`
-- `melnikovit/mcp-team-hub-embeddings-stub`
-
-## Core MCP workers
-
-- `melnikovit/mcp-team-hub-mcp-secrets`
-- `melnikovit/mcp-team-hub-mcp-context`
-- `melnikovit/mcp-team-hub-mcp-knowledge`
-- `melnikovit/mcp-team-hub-mcp-web-search`
-- `melnikovit/mcp-team-hub-mcp-git`
-- `melnikovit/mcp-team-hub-mcp-figma`
-- `melnikovit/mcp-team-hub-mcp-codebase-memory`
-- `melnikovit/mcp-team-hub-mcp-semgrep`
-
-## Integrations
-
-- `melnikovit/mcp-team-hub-mcp-jira`
-- `melnikovit/mcp-team-hub-mcp-notion`
-- `melnikovit/mcp-team-hub-mcp-confluence`
-- `melnikovit/mcp-team-hub-mcp-tracker`
-- `melnikovit/mcp-team-hub-mcp-ci`
-- `melnikovit/mcp-team-hub-mcp-slack`
-- `melnikovit/mcp-team-hub-mcp-telegram`
-- `melnikovit/mcp-team-hub-mcp-email`
-
-## Dev / ops tooling
-
-- `melnikovit/mcp-team-hub-mcp-repo-search`
-- `melnikovit/mcp-team-hub-mcp-changelog`
-- `melnikovit/mcp-team-hub-mcp-openapi`
-- `melnikovit/mcp-team-hub-mcp-lighthouse`
-- `melnikovit/mcp-team-hub-mcp-bundle`
-- `melnikovit/mcp-team-hub-mcp-docker`
-- `melnikovit/mcp-team-hub-mcp-database`
-- `melnikovit/mcp-team-hub-mcp-http-client`
-- `melnikovit/mcp-team-hub-mcp-secrets-scan`
-- `melnikovit/mcp-team-hub-mcp-vuln`
-- `melnikovit/mcp-team-hub-mcp-playwright`
-- `melnikovit/mcp-team-hub-mcp-diagrams`
-- `melnikovit/mcp-team-hub-mcp-kubernetes`
-- `melnikovit/mcp-team-hub-mcp-terraform`
-- `melnikovit/mcp-team-hub-mcp-ansible`
-- `melnikovit/mcp-team-hub-mcp-ssh`
-- `melnikovit/mcp-team-hub-mcp-utils`
-- `melnikovit/mcp-team-hub-mcp-fetch`
-- `melnikovit/mcp-team-hub-mcp-s3`
-- `melnikovit/mcp-team-hub-mcp-memory-graph`
-- `melnikovit/mcp-team-hub-mcp-cloud`
-- `melnikovit/mcp-team-hub-mcp-monitoring`
-- `melnikovit/mcp-team-hub-mcp-logs`
-- `melnikovit/mcp-team-hub-mcp-office`
-
-## Third-party (not under melnikovit)
-
-- `pgvector/pgvector:pg16-bookworm` — shared Postgres + vector extension
-- `searxng/searxng:latest` — optional meta-search for mcp-web-search
-
-## Pull examples
-
-```bash
-docker pull melnikovit/mcp-team-hub-gateway:latest
-docker pull melnikovit/mcp-team-hub-backend:latest
-docker pull melnikovit/mcp-team-hub-frontend:latest
-docker pull melnikovit/mcp-team-hub-mcp-secrets:latest
+```
+melnikovit/mcp-team-hub-<component>:latest
 ```
 
-Or pull everything referenced by Compose:
+CI may also push a git-SHA tag. Compose in this repo pins `:latest` for a simple install. Pin a digest or SHA tag if you need a reproducible production deploy.
 
 ```bash
 docker compose pull
 ```
+
+## Platform
+
+| Image | Role |
+|---|---|
+| `melnikovit/mcp-team-hub-gateway` | Reverse proxy, MCP auth, hub aggregator |
+| `melnikovit/mcp-team-hub-frontend` | Admin SPA |
+| `melnikovit/mcp-team-hub-backend` | Admin API |
+| `melnikovit/mcp-team-hub-orchestrator` | Docker lifecycle helpers |
+| `melnikovit/mcp-team-hub-embeddings-stub` | Optional embeddings stub (`--profile stub`) |
+
+## Core workers
+
+| Image | Role |
+|---|---|
+| `…-mcp-secrets` | Encrypted vault |
+| `…-mcp-context` | Workspace memory |
+| `…-mcp-knowledge` | Knowledge / RAG |
+| `…-mcp-web-search` | Web search + cache |
+| `…-mcp-git` | Git forges |
+| `…-mcp-figma` | Figma layout / export |
+| `…-mcp-codebase-memory` | Code graph |
+| `…-mcp-semgrep` | SAST |
+
+## Other workers
+
+Integrations: Jira, Notion, Confluence, tracker, CI, Slack, Telegram, email.
+
+Dev / ops: repo-search, changelog, OpenAPI, Lighthouse, bundle, Docker, database, HTTP client, secrets-scan, vuln, Playwright, diagrams, Kubernetes, Terraform, Ansible, SSH, utils, fetch, S3, memory-graph, cloud, monitoring, logs, office.
+
+Full Compose service names match `mcp-team-hub-mcp-<id>` on Docker Hub.
+
+## Third-party
+
+| Image | Role |
+|---|---|
+| `pgvector/pgvector:pg16-bookworm` | Shared Postgres + vector |
+| `searxng/searxng:latest` | Meta-search for web-search |

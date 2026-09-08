@@ -2,207 +2,119 @@
 
 **One gateway. Shared MCP tools. Team admin.**
 
-Self-hosted hub for the [Model Context Protocol](https://modelcontextprotocol.io/): a single authenticated entry for IDEs and agents, plus a web admin for users, projects, secrets, and knowledge.
+Self-hosted hub for the [Model Context Protocol](https://modelcontextprotocol.io/). IDEs and agents connect to a **single authenticated URL** instead of a pile of per-server configs. Operators get a web console for users, secrets, knowledge, and logs.
 
-> **RU.** Self-hosted хаб MCP: один авторизованный вход для IDE и агентов, веб-админка для пользователей, проектов, секретов и базы знаний.
+A hosted instance runs at [mcp-team-hub.proxy-nova.ru](https://mcp-team-hub.proxy-nova.ru). This repository is the **public documentation and Docker Compose install** — application source is not published here.
 
-[Quick start](#quick-start) · [Configuration](#configuration) · [IDE connect](#connect-your-ide) · [Русская версия](./README.ru.md) · [Docker images](./IMAGES.md)
+[![License: MIT](https://img.shields.io/badge/license-MIT-0F172A?style=flat-square)](./LICENSE)
+[![MCP](https://img.shields.io/badge/protocol-MCP-2563EB?style=flat-square)](https://modelcontextprotocol.io/)
+[![Docker](https://img.shields.io/badge/run-Docker%20Compose-2496ED?style=flat-square)](./docker-compose.yml)
 
----
-
-## What it is
-
-**mcp-team-hub** runs as Docker Compose and pulls public images from Docker Hub (`melnikovit/mcp-team-hub-*`).
-
-| Capability | What you get |
-|---|---|
-| Gateway | One HTTP entry for UI, `/api`, and `/mcp/*` |
-| Admin UI | Users, roles, per-user MCP sets, projects, logs |
-| Secrets vault | Encrypted provider tokens (not baked into container env) |
-| Knowledge / RAG | Crawl/ingest docs, embeddings, grounded answers |
-| IDE connect | Hub URL + access token for your editor |
-| Worker suite | First-party MCP microservices on shared Postgres |
-
-This public repository is **documentation and deploy templates only**. Application source is not published here.
-
-### На русском
-
-**mcp-team-hub** поднимается через Docker Compose и тянет публичные образы с Docker Hub.
-
-Один gateway — точка входа; админка — пользователи и наборы MCP; vault — секреты; knowledge/RAG — документы; IDE connect — URL и токен для редактора.
-
-Публичный репозиторий содержит **только документацию и шаблоны деплоя**. Исходники приложения здесь не публикуются.
+[Русская версия](./README.ru.md) · [Architecture](./docs/architecture.md) · [Capabilities](./docs/capabilities.md) · [Images](./IMAGES.md)
 
 ---
 
-## Who it's for
+## Why it exists
 
-- Teams that want **one shared MCP endpoint** instead of dozens of ad-hoc server configs in every IDE
-- Operators who prefer **self-hosted** tooling with Docker
-- Admins who need **per-user access** to git, search, trackers, docs, scanners, and more
+Most teams accumulate a dozen MCP servers in every editor: git here, search there, a tracker, a vault, a docs crawler. Tokens leak into env files. Nobody knows who enabled what.
 
-### На русском
+**mcp-team-hub** puts that behind one gateway:
 
-- Команды, которым нужен **один общий MCP-вход**, а не десятки конфигов в каждом редакторе
-- Операторы, которые деплоят **у себя** через Docker
-- Админы, которым нужен **доступ по пользователям** к git, поиску, трекерам, документации, сканерам
+- one `/mcp/hub` endpoint for clients
+- per-user tool sets in the admin UI
+- provider tokens in an encrypted vault (not container env)
+- knowledge and workspace memory next to the tools
+
+---
+
+## Features
+
+- **Single MCP entry** — one URL and one vault access token for VS Code, JetBrains, Claude, and other MCP clients
+- **Hub aggregator** — `hub_search` and namespaced tools (`kb_*`, `context_*`, `secrets_*`, `git_*`, …) without listing every worker in the client
+- **Admin UI** — dashboard, per-user MCP catalog, knowledge, secrets, IDE connect, operational logs; admins also get users and analytics
+- **Secrets vault** — encrypted provider credentials (Git, Jira, Figma, …) resolved at request time
+- **Knowledge / RAG** — ingest URLs, crawl sites, hybrid search, embeddings
+- **Workspace memory** — goals, decisions, facts, tasks, and notes scoped to a project
+- **Code intelligence** — repository index, symbol search, call traces (when the module is enabled)
+- **Team integrations** — git forges, trackers, Confluence, Figma, web search, Semgrep, and a larger worker suite
+- **IDE pack** — connect page with config snippet plus optional skills/rules bundle
+- **Self-hosted Compose** — public images on Docker Hub, one shared PostgreSQL (schema per worker)
 
 ---
 
 ## Architecture
 
+```mermaid
+flowchart LR
+  subgraph Clients
+    IDE[IDE / agent]
+    Browser[Admin browser]
+  end
+
+  GW[Gateway]
+
+  subgraph Platform
+    UI[Frontend]
+    API[Admin API]
+    Hub["/mcp/hub"]
+    Orch[Orchestrator]
+  end
+
+  subgraph Workers
+    Vault[Vault]
+    KB[Knowledge]
+    More[Git, search, …]
+  end
+
+  PG[(PostgreSQL + pgvector)]
+
+  IDE --> GW
+  Browser --> GW
+  GW --> UI
+  GW --> API
+  GW --> Hub
+  GW --> Orch
+  Hub --> Vault
+  Hub --> KB
+  Hub --> More
+  API --> PG
+  Vault --> PG
+  KB --> PG
+  More --> PG
 ```
-IDE / browser
-      │
-      ▼
-   gateway  ──► frontend (admin SPA)
-      ├──► api (auth, catalog, projects, vault)
-      ├──► orchestrator (container helpers)
-      └──► MCP workers (secrets, git, search, knowledge, …)
-                │
-                ▼
-           shared PostgreSQL (schema per worker)
-```
 
-Third-party images in the stack: `pgvector/pgvector` (database) and `searxng/searxng` (optional meta-search for web-search).
-
-### На русском
-
-Браузер и IDE ходят в **gateway**. Он отдаёт SPA, проксирует API и маршруты MCP-воркеров. Всё пишет в **общий Postgres** (отдельная schema на воркер).
-
----
-
-## Requirements
-
-- Docker Engine
-- Docker Compose v2
-- ~4 GB RAM recommended for the full worker suite
-- Ports: `4300` on the host by default (gateway)
-
-### На русском
-
-Нужны Docker Engine и Compose v2. Для полного набора воркеров лучше от ~4 GB RAM. По умолчанию на хосте открыт порт `4300`.
+The gateway is the only host port (`4300` by default). It serves the SPA, `/api`, `/orch`, `/mcp/hub`, and `/mcp/{server}`. Workers stay on the compose network. Details: [docs/architecture.md](./docs/architecture.md).
 
 ---
 
 ## Quick start
 
-```bash
-git clone https://github.com/melnikovit/mcp-team-hub.git
-cd mcp-team-hub
-cp .env.example .env
-# Replace every change-me / changeme before any real deployment
-docker compose pull
-docker compose up -d
-```
-
-Open the admin UI: **[http://localhost:4300](http://localhost:4300)**
-
-Bootstrap admin (from `.env.example`):
-
-- Email: `admin@example.com`
-- Password: `changeme`
-
-Change these before exposing the stack beyond localhost.
-
-### На русском
-
-Клонируйте репозиторий, скопируйте `.env.example` → `.env`, замените плейсхолдеры, затем `docker compose pull && docker compose up -d`. UI: http://localhost:4300. Логин/пароль bootstrap — из `.env.example`; смените их до публикации наружу.
-
----
-
-## Install & deploy
-
-### 1. Clone and configure
+You need Docker Engine and Compose v2. Plan on about **4 GB RAM** for the full worker suite.
 
 ```bash
 git clone https://github.com/melnikovit/mcp-team-hub.git
 cd mcp-team-hub
 cp .env.example .env
-```
-
-Edit `.env` and set at least:
-
-- `JWT_SECRET`
-- `VAULT_MASTER_KEY`
-- `VAULT_SERVICE_TOKEN`
-- `GATEWAY_INTERNAL_TOKEN`
-- `ORCHESTRATOR_API_TOKEN`
-- `BOOTSTRAP_ADMIN_PASSWORD`
-- `POSTGRES_PASSWORD`
-
-### 2. Pull images and start
-
-```bash
+# Replace every change-me / changeme before a real deployment
 docker compose pull
 docker compose up -d
-docker compose ps
 ```
 
-### 3. Verify
+Open **[http://localhost:4300](http://localhost:4300)** and sign in with the bootstrap admin from `.env.example` (`admin@example.com` / `changeme`). Change that password before the stack leaves localhost.
 
 ```bash
 curl -sS -o /dev/null -w "%{http_code}\n" http://localhost:4300/
 ```
 
-Expect `200` (or a redirect). Then sign in at http://localhost:4300.
-
-### 4. Your own domain (optional)
-
-```env
-APP_PUBLIC_URL=https://your-domain.example
-CORS_ORIGINS=https://your-domain.example
-GATEWAY_PORT=4300
-```
-
-Terminate TLS on a reverse proxy (Caddy, nginx, Traefik) in front of the gateway. Do not commit real certificates or secrets to this repo.
-
-### Images
-
-- Namespace: [`melnikovit`](https://hub.docker.com/u/melnikovit)
-- Pattern: `melnikovit/mcp-team-hub-<component>:latest`
-- Full list: [IMAGES.md](./IMAGES.md)
-
-```bash
-docker pull melnikovit/mcp-team-hub-gateway:latest
-docker pull melnikovit/mcp-team-hub-backend:latest
-docker pull melnikovit/mcp-team-hub-frontend:latest
-```
-
-### На русском
-
-1. Клонировать → `cp .env.example .env` → заменить секреты.  
-2. `docker compose pull && docker compose up -d`.  
-3. Проверить http://localhost:4300.  
-4. Для своего домена задать `APP_PUBLIC_URL` / `CORS_ORIGINS` и TLS на reverse proxy.  
-Список образов — в [IMAGES.md](./IMAGES.md).
+Expect `200` (or a redirect).
 
 ---
 
-## Configuration
+## Connect an IDE
 
-Source of truth: [`.env.example`](./.env.example).
-
-| Area | Variables |
-|---|---|
-| Public entry | `GATEWAY_PORT`, `APP_PUBLIC_URL`, `CORS_ORIGINS` |
-| Auth | `JWT_SECRET`, bootstrap admin fields |
-| Vault | `VAULT_MASTER_KEY`, `VAULT_SERVICE_TOKEN` |
-| Internal tokens | `GATEWAY_INTERNAL_TOKEN`, `ORCHESTRATOR_API_TOKEN`, `KNOWLEDGE_SERVICE_TOKEN` |
-| Optional SMTP / OIDC | `SMTP_*`, `OIDC_*` |
-
-**Provider tokens** (Git, Jira, Figma, …) belong in the in-app **Secrets** vault after login — not in compose env for real deployments.
-
-### На русском
-
-Скопируйте `.env.example`, заполните секреты платформы. Токены внешних провайдеров кладите в vault в UI после входа, а не в env контейнеров на проде.
-
----
-
-## Connect your IDE
-
-1. Open the admin UI and complete **IDE connect** (or copy the hub URL + vault access token from the UI).
-2. Add a server to your MCP client config:
+1. Sign in and open **IDE connect** (`/ide`).
+2. Copy the hub URL and vault access token.
+3. Add a single server to the client config:
 
 ```json
 {
@@ -217,46 +129,70 @@ Source of truth: [`.env.example`](./.env.example).
 }
 ```
 
-For a remote install, replace the URL with `https://your-domain.example/mcp/hub`.
+On a remote host use `https://your-domain.example/mcp/hub` (or the [hosted instance](https://mcp-team-hub.proxy-nova.ru/mcp/hub) if you have an account there). Use the `url` field — do not add a separate `type` / `serverUrl` unless your client requires it.
 
-Never commit real tokens. Prefer placeholders in docs and rotate anything that leaked.
+Reload MCP in the client, then start a **new** agent chat so `tools/list` is not stale.
 
-### На русском
-
-В UI возьмите URL хаба и vault-токен, добавьте их в конфиг MCP-клиента. Для удалённого деплоя используйте `https://your-domain.example`. Реальные токены в git не коммитьте.
+More: [docs/capabilities.md](./docs/capabilities.md#ide-connect).
 
 ---
 
-## Troubleshooting
+## Configuration
 
-| Symptom | What to check |
+Copy [`.env.example`](./.env.example) and set at least:
+
+| Area | Variables |
 |---|---|
-| UI not loading | `docker compose ps`, gateway logs: `docker compose logs gateway --tail=100` |
-| Login fails | Bootstrap vars in `.env`; recreate admin only on a fresh DB volume |
-| MCP tools empty | Vault token in IDE headers; user MCP set in admin; worker health via `docker compose ps` |
-| Web search empty | SearXNG service up; connection stored in vault / settings |
-| Port busy | Change `GATEWAY_PORT` in `.env` |
+| Public entry | `GATEWAY_PORT`, `APP_PUBLIC_URL`, `CORS_ORIGINS` |
+| Auth | `JWT_SECRET`, `BOOTSTRAP_ADMIN_*` |
+| Vault | `VAULT_MASTER_KEY`, `VAULT_SERVICE_TOKEN` |
+| Internal tokens | `GATEWAY_INTERNAL_TOKEN`, `ORCHESTRATOR_API_TOKEN`, `KNOWLEDGE_SERVICE_TOKEN` |
+| Database | `POSTGRES_PASSWORD` |
 
-```bash
-docker compose logs api --tail=100
-docker compose logs mcp-secrets --tail=100
-docker compose down   # stop stack (keeps volumes)
+**Provider tokens** (Git, Jira, Figma, search APIs, …) go into **Secrets** in the UI after login — not into compose env on a real deploy.
+
+Your own domain:
+
+```env
+APP_PUBLIC_URL=https://your-domain.example
+CORS_ORIGINS=https://your-domain.example
 ```
 
-### На русском
+Terminate TLS on Caddy, nginx, or Traefik in front of the gateway.
 
-Смотрите `docker compose ps` и логи `gateway` / `api` / нужного воркера. Пустой список tools — чаще всего токен в IDE или набор MCP у пользователя. Занятый порт — смените `GATEWAY_PORT`.
+Images: `melnikovit/mcp-team-hub-<component>:latest` — full list in [IMAGES.md](./IMAGES.md).
 
 ---
 
-## What is not in this repo
+## Operations
 
-- Application source and private CI
-- Production hostnames, internal IPs, or operator runbooks
-- Real secrets or private registry credentials
+```bash
+docker compose ps
+docker compose logs gateway --tail=100
+docker compose logs api --tail=100
+docker compose down          # stop; volumes stay
+```
+
+| Symptom | Check |
+|---|---|
+| UI does not load | `docker compose ps`, gateway logs, `GATEWAY_PORT` |
+| Login fails | bootstrap vars in `.env`; a fresh volume is required to recreate the first admin |
+| MCP tools empty | vault token in the client; user MCP set on `/mcp`; worker health |
+| Web search empty | SearXNG up; connection stored in the vault |
+| Port busy | change `GATEWAY_PORT` |
+
+---
+
+## What this repository is
+
+| Included | Not included |
+|---|---|
+| README and extra docs | Application source |
+| `docker-compose.yml` + `.env.example` | Private CI and registries |
+| Postgres / SearXNG deploy snippets | Production IPs, SSH, vault tokens |
 
 ---
 
 ## License
 
-MIT — see [LICENSE](./LICENSE).
+[MIT](./LICENSE) © 2026 mcp-team-hub contributors
