@@ -1,35 +1,46 @@
 # mcp-team-hub
 
-**mcp-team-hub** is a self-hosted platform for team MCP (Model Context Protocol) tooling: a web admin UI, API, gateway, orchestrator, shared PostgreSQL, and a suite of MCP worker microservices.
+## What it is / Что это
 
-This public repository contains **deployment documentation and compose templates** that pull **pre-built public images from Docker Hub**. Application source code is not published here.
+**EN.** **mcp-team-hub** is a self-hosted team hub for [MCP](https://modelcontextprotocol.io/) (Model Context Protocol). One gateway gives your IDE and agents a single entry to many tools; a web admin manages users, projects, and which MCP servers each person can use; a vault stores credentials; knowledge/RAG workers index docs for grounded answers; and an IDE-connect flow issues the tokens and config you need to plug the hub into your editor.
 
-## Architecture (overview)
+**RU.** **mcp-team-hub** — self-hosted хаб MCP для команды. Один gateway — единая точка входа IDE и агентов ко многим tools; веб-админка управляет пользователями, проектами и набором MCP у каждого; vault хранит секреты; knowledge/RAG индексирует документы для ответов с опорой на базу знаний; подключение IDE выдаёт токены и конфиг для редактора.
+
+Use it when a team wants shared MCP tooling (git, search, trackers, docs, security scanners, …) behind one authenticated endpoint instead of dozens of ad-hoc server configs.
+
+Подходит команде, которой нужен общий набор MCP-инструментов за одним авторизованным входом, а не десятки разрозненных конфигов в каждом редакторе.
+
+### Highlights / Возможности
+
+| EN | RU |
+|----|----|
+| **Gateway + MCP hub** — fan-out `tools/list`, per-server routes, knowledge-first options | **Gateway + MCP hub** — агрегация tools, маршруты по серверам, knowledge-first |
+| **Admin UI** — users/roles, per-user MCP sets, projects, analytics, logs | **Админка** — пользователи/роли, личные наборы MCP, проекты, аналитика, логи |
+| **Secrets vault** — encrypted provider tokens; not baked into container env | **Vault** — шифрованные токены провайдеров; не в env контейнеров |
+| **Knowledge / RAG** — crawl/ingest docs, embeddings, internal knowledge API | **Knowledge / RAG** — обход/импорт документов, embeddings, internal API |
+| **IDE connect** — hub URL + vault access token (and optional per-server bundle) | **Подключение IDE** — URL hub + vault-токен (опционально бандл per-server) |
+| **Worker suite** — first-party MCP microservices on a shared Postgres | **Воркеры** — first-party MCP-микросервисы на общем Postgres |
 
 ```
 IDE / browser
     │
     ▼
- gateway  ──► frontend (SPA)
-    ├──► api (admin / auth / catalog)
-    ├──► orchestrator (container lifecycle)
+ gateway  ──► frontend (admin SPA)
+    ├──► api (auth, catalog, projects, vault integration)
+    ├──► orchestrator (container lifecycle helpers)
     └──► MCP workers (secrets, git, search, knowledge, …)
               │
               ▼
-         shared PostgreSQL (schemas per worker)
+         shared PostgreSQL (schema per worker)
 ```
 
-| Component | Role |
-|-----------|------|
-| **gateway** | Single HTTP entry (UI + `/api` + `/mcp/*`) |
-| **frontend** | Admin SPA |
-| **api** (image: `mcp-team-hub-backend`) | JWT auth, catalog, projects, vault integration |
-| **orchestrator** | Docker lifecycle helpers |
-| **mcp-*** workers | First-party MCP servers |
-| **postgres** | Shared DB (`pgvector` image) |
-| **searxng** | Optional meta-search backend for web-search |
+> This public repository is **docs + deploy templates only** (Docker Compose pulling public images). Application source lives elsewhere.
 
-## Quick start
+> Этот публичный репозиторий — **только документация и шаблоны деплоя** (Compose с публичными образами). Исходники приложения публикуются отдельно.
+
+---
+
+## Deploy with Docker Hub images / Деплой с образами Docker Hub
 
 Requirements: Docker Engine + Docker Compose v2.
 
@@ -44,16 +55,9 @@ docker compose up -d
 
 Open the UI: [http://localhost:4300](http://localhost:4300)
 
-Default bootstrap admin (from `.env.example`):
+Default bootstrap admin (from `.env.example`): `admin@example.com` / `changeme` — change before exposing beyond localhost.
 
-- email: `admin@example.com`
-- password: `changeme`
-
-Change these before exposing the stack beyond localhost.
-
-### Behind your own domain
-
-Set in `.env`:
+### Your own domain / Свой домен
 
 ```env
 APP_PUBLIC_URL=https://your-domain.example
@@ -61,17 +65,13 @@ CORS_ORIGINS=https://your-domain.example
 GATEWAY_PORT=4300
 ```
 
-Put a reverse proxy (Caddy, nginx, Traefik) in front of the gateway port and terminate TLS there. Do not commit real certificates or secrets into this repo.
+Terminate TLS on your reverse proxy (Caddy, nginx, Traefik) in front of the gateway. Do not commit real certificates or secrets here.
 
-## Docker Hub images
+### Images / Образы
 
-All application images are public:
-
-- Namespace: [`melnikovit`](https://hub.docker.com/u/melnikovit)
-- Naming: `melnikovit/mcp-team-hub-<component>:latest` (also tagged with git SHA from CI)
-- Full list: see [IMAGES.md](./IMAGES.md)
-
-Examples:
+Public namespace: [`melnikovit`](https://hub.docker.com/u/melnikovit)  
+Pattern: `melnikovit/mcp-team-hub-<component>:latest` (CI also pushes a git-SHA tag)  
+Full list: [IMAGES.md](./IMAGES.md)
 
 ```bash
 docker pull melnikovit/mcp-team-hub-gateway:latest
@@ -79,25 +79,29 @@ docker pull melnikovit/mcp-team-hub-backend:latest
 docker pull melnikovit/mcp-team-hub-frontend:latest
 ```
 
-Third-party images used by compose:
+Also used: `pgvector/pgvector:pg16-bookworm`, `searxng/searxng:latest`.
 
-- `pgvector/pgvector:pg16-bookworm`
-- `searxng/searxng:latest`
+| Component | Role |
+|-----------|------|
+| **gateway** | Single HTTP entry (UI + `/api` + `/mcp/*`) |
+| **frontend** | Admin SPA |
+| **api** (image `mcp-team-hub-backend`) | JWT auth, catalog, projects, vault |
+| **orchestrator** | Docker lifecycle helpers |
+| **mcp-*** workers | First-party MCP servers |
+| **postgres** | Shared DB (`pgvector`) |
+| **searxng** | Optional meta-search for web-search |
 
-## Configuration
+### Configuration / Конфигурация
 
-Copy [`.env.example`](./.env.example) to `.env` and replace every `change-me` / `changeme` value:
+Copy [`.env.example`](./.env.example) → `.env` and replace every `change-me` / `changeme`:
 
 - `JWT_SECRET`, `VAULT_MASTER_KEY`, `VAULT_SERVICE_TOKEN`
 - `GATEWAY_INTERNAL_TOKEN`, `ORCHESTRATOR_API_TOKEN`
 - Bootstrap admin password
-- Per-worker admin passwords where applicable
 
-User API tokens for external providers (Git, Jira, Figma, …) belong in the in-app **Secrets** vault after first login — not in compose environment files for production.
+Provider API tokens (Git, Jira, Figma, …) go into the in-app **Secrets** vault after login — not into compose env for real deployments.
 
-## MCP / IDE connection
-
-With the stack running locally, a typical hub endpoint looks like:
+### MCP / IDE connection / Подключение IDE
 
 ```json
 {
@@ -112,9 +116,9 @@ With the stack running locally, a typical hub endpoint looks like:
 }
 ```
 
-For a remote install, replace the host with `https://your-domain.example`.
+Remote install: use `https://your-domain.example` instead of localhost.
 
-## What is not in this repository
+## What is not here / Чего здесь нет
 
 - Application source code and private CI
 - Production hostnames, internal IPs, or operator runbooks
