@@ -1,0 +1,49 @@
+# Docker Hub images
+
+All images are **public** under the `melnikovit` namespace.
+
+- `melnikovit/mcp-team-hub-mcp-secrets:latest`
+- `melnikovit/mcp-team-hub-mcp-web-search:latest`
+- `melnikovit/mcp-team-hub-mcp-git:latest`
+- `melnikovit/mcp-team-hub-mcp-jira:latest`
+- `melnikovit/mcp-team-hub-mcp-notion:latest`
+- `melnikovit/mcp-team-hub-mcp-context:latest`
+- `melnikovit/mcp-team-hub-mcp-confluence:latest`
+- `melnikovit/mcp-team-hub-mcp-figma:latest`
+- `melnikovit/mcp-team-hub-mcp-codebase-memory:latest`
+- `melnikovit/mcp-team-hub-mcp-semgrep:latest`
+- `melnikovit/mcp-team-hub-embeddings-stub:latest`
+- `melnikovit/mcp-team-hub-mcp-knowledge:latest`
+- `melnikovit/mcp-team-hub-backend:latest`
+- `melnikovit/mcp-team-hub-frontend:latest`
+- `melnikovit/mcp-team-hub-orchestrator:latest`
+- `melnikovit/mcp-team-hub-gateway:latest`
+- `melnikovit/mcp-team-hub-mcp-repo-search:latest`
+- `melnikovit/mcp-team-hub-mcp-changelog:latest`
+- `melnikovit/mcp-team-hub-mcp-ci:latest`
+- `melnikovit/mcp-team-hub-mcp-tracker:latest`
+- `melnikovit/mcp-team-hub-mcp-openapi:latest`
+- `melnikovit/mcp-team-hub-mcp-lighthouse:latest`
+- `melnikovit/mcp-team-hub-mcp-bundle:latest`
+- `melnikovit/mcp-team-hub-mcp-docker:latest`
+- `melnikovit/mcp-team-hub-mcp-database:latest`
+- `melnikovit/mcp-team-hub-mcp-http-client:latest`
+- `melnikovit/mcp-team-hub-mcp-secrets-scan:latest`
+- `melnikovit/mcp-team-hub-mcp-vuln:latest`
+- `melnikovit/mcp-team-hub-mcp-playwright:latest`
+- `melnikovit/mcp-team-hub-mcp-diagrams:latest`
+- `melnikovit/mcp-team-hub-mcp-kubernetes:latest`
+- `melnikovit/mcp-team-hub-mcp-terraform:latest`
+- `melnikovit/mcp-team-hub-mcp-ansible:latest`
+- `melnikovit/mcp-team-hub-mcp-ssh:latest`
+- `melnikovit/mcp-team-hub-mcp-slack:latest`
+- `melnikovit/mcp-team-hub-mcp-telegram:latest`
+- `melnikovit/mcp-team-hub-mcp-email:latest`
+- `melnikovit/mcp-team-hub-mcp-utils:latest`
+- `melnikovit/mcp-team-hub-mcp-fetch:latest`
+- `melnikovit/mcp-team-hub-mcp-s3:latest`
+- `melnikovit/mcp-team-hub-mcp-memory-graph:latest`
+- `melnikovit/mcp-team-hub-mcp-cloud:latest`
+- `melnikovit/mcp-team-hub-mcp-monitoring:latest`
+- `melnikovit/mcp-team-hub-mcp-logs:latest`
+- `melnikovit/mcp-team-hub-mcp-office:latest`

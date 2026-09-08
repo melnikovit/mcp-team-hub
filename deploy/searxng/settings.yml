@@ -1,0 +1,32 @@
+# Конфиг SearXNG для стека mcp-figma (приватный инстанс, JSON API для mcp-web-search).
+# На проде смените server.secret_key (openssl rand -hex 32).
+
+use_default_settings: true
+
+server:
+  bind_address: "0.0.0.0"
+  port: 8080
+  # Только docker-сеть + 127.0.0.1 на хосте — без публичного nginx по умолчанию
+  limiter: false
+  secret_key: "localbuild-change-me-searx-secret-key-32b"
+
+search:
+  safe_search: 0
+  default_lang: "ru-RU"
+  formats:
+    - html
+    - json
+
+engines:
+  - name: google
+    engine: google
+    disabled: false
+
+  - name: yandex
+    engine: yandex
+    disabled: false
+    language: ru
+
+  - name: duckduckgo
+    engine: duckduckgo
+    disabled: false
