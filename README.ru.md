@@ -4,7 +4,7 @@
 
 Self-hosted хаб для [Model Context Protocol](https://modelcontextprotocol.io/). IDE и агенты подключаются к **одному авторизованному URL**, а не к десятку отдельных серверов. Операторы получают веб-консоль: пользователи, секреты, база знаний, логи.
 
-Публичный инстанс: [mcp-team-hub.proxy-nova.ru](https://mcp-team-hub.proxy-nova.ru). Этот репозиторий — **документация и установка через Docker Compose**. Исходники приложения сюда не публикуются.
+Этот репозиторий — **документация и установка через Docker Compose**. Исходники приложения сюда не публикуются. Поднимайте стек на своём хосте.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-0F172A?style=flat-square)](./LICENSE)
 [![MCP](https://img.shields.io/badge/protocol-MCP-2563EB?style=flat-square)](https://modelcontextprotocol.io/)
@@ -129,7 +129,7 @@ curl -sS -o /dev/null -w "%{http_code}\n" http://localhost:4300/
 }
 ```
 
-Для удалённого хоста: `https://your-domain.example/mcp/hub` (или [публичный инстанс](https://mcp-team-hub.proxy-nova.ru/mcp/hub), если есть доступ). Поле — `url`, без лишнего `type` / `serverUrl`, если клиент сам определяет транспорт.
+Для удалённого хоста: `https://your-domain.example/mcp/hub`. Поле — `url`, без лишнего `type` / `serverUrl`, если клиент сам определяет транспорт.
 
 После смены конфига перезагрузите MCP в клиенте и откройте **новый** чат агента — иначе кэш `tools/list` останется старым.
 

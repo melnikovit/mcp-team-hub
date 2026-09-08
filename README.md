@@ -4,7 +4,7 @@
 
 Self-hosted hub for the [Model Context Protocol](https://modelcontextprotocol.io/). IDEs and agents connect to a **single authenticated URL** instead of a pile of per-server configs. Operators get a web console for users, secrets, knowledge, and logs.
 
-A hosted instance runs at [mcp-team-hub.proxy-nova.ru](https://mcp-team-hub.proxy-nova.ru). This repository is the **public documentation and Docker Compose install** — application source is not published here.
+This repository is the **public documentation and Docker Compose install** — application source is not published here. Run it on your own host.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-0F172A?style=flat-square)](./LICENSE)
 [![MCP](https://img.shields.io/badge/protocol-MCP-2563EB?style=flat-square)](https://modelcontextprotocol.io/)
@@ -129,7 +129,7 @@ Expect `200` (or a redirect).
 }
 ```
 
-On a remote host use `https://your-domain.example/mcp/hub` (or the [hosted instance](https://mcp-team-hub.proxy-nova.ru/mcp/hub) if you have an account there). Use the `url` field — do not add a separate `type` / `serverUrl` unless your client requires it.
+On a remote host use `https://your-domain.example/mcp/hub`. Use the `url` field — do not add a separate `type` / `serverUrl` unless your client requires it.
 
 Reload MCP in the client, then start a **new** agent chat so `tools/list` is not stale.
 
